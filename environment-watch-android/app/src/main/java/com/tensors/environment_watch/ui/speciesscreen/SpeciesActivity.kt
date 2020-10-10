@@ -6,19 +6,28 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.PointF
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolygonOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.tensors.environment_watch.R
+import com.tensors.environment_watch.api.GalleryAdapter
 import com.tensors.environment_watch.api.Species
+import kotlinx.android.synthetic.main.activity_gallery.*
 import kotlinx.android.synthetic.main.activity_species.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +46,20 @@ class SpeciesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_species)
 
+        val mapFragment = supportFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync {googleMap ->
+            FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
+                .listAll().addOnSuccessListener { listResult ->
+                    Log.e("Smail", "Why: ${listResult.items.size}")
+                    listResult?.items?.forEach { storageReference ->
+                        storageReference.getBytes(1024 * 1024).addOnSuccessListener {
+                            val (lat, lon) = String(it).split(" ")
+                            googleMap?.addMarker(MarkerOptions().position(LatLng(lat.toDouble(), lon.toDouble())))
+                        }
+                    }
+                }
+        }
 
         setUpView()
     }
@@ -45,6 +68,7 @@ class SpeciesActivity : AppCompatActivity() {
         species = Species(
             intent.getStringExtra("name")!!,
             intent.getStringExtra("fullName")!!,
+            intent.getStringExtra("httpRequestName")!!,
             intent.getStringExtra("state")!!,
             intent.getStringExtra("fullDescription")!!
         )
