@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Environment Watch</string>
+    <string name="tab_text_1">Endangered Species</string>
+    <string name="tab_text_2">Location Map</string>
+
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyAmNxGLmtITpXQkiPg7iQ7eL9LFmurum-g</string>
+</resources>

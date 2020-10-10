@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/blue">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        style="@style/TextAppearance.AppCompat.Headline"
+        android:text="How it works..."
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="50dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:textColor="@android:color/white"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="This is a platform to crowd source data about endangered and threatened species. The idea is simple:"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:textColor="@android:color/white"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="   -    If you see any endangered species that we already have, use the app to take a photo of it and submit it online."/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:textColor="@android:color/white"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="   -    Scientists and enthusiests will gain access to this information and will be able to model these populations."/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:textColor="@android:color/white"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="   -    You can view the photos of other users, as well as see the approximate location the animal was found"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:textColor="@android:color/white"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="   -    If you want to add an animal there is a button at the home screen."/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:textColor="@android:color/white"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginBottom="200dp"
+        android:text="We thank you for using this app, happy animal watching!"/>
+
+    <Button
+        android:id="@+id/take_me_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_gravity="center_horizontal"
+        android:background="@android:color/holo_green_light"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="5dp"
+        android:text="Home"/>
+
+</LinearLayout>
