@@ -14,6 +14,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.tensors.environment_watch.R
 import com.tensors.environment_watch.api.SpeciesAdapter
+import com.tensors.environment_watch.api.species
 import com.tensors.environment_watch.ui.speciesscreen.SpeciesActivity
 import kotlinx.android.synthetic.main.activity_species.*
 import kotlinx.android.synthetic.main.species_loc_main_layout.*
@@ -33,23 +34,38 @@ class TabFragment : Fragment() {
         species_list.visibility = View.VISIBLE
         species_list.setOnItemClickListener { parent, view, position, id ->
             val intent = Intent(activity, SpeciesActivity::class.java)
-            val speciesList = (species_list.adapter as SpeciesAdapter).species
-            intent.putExtra("name", speciesList[position].name)
-            intent.putExtra("fullName", speciesList[position].fullName)
-            intent.putExtra("httpRequestName", speciesList[position].httpRequestName)
-            intent.putExtra("state", speciesList[position].state)
-            intent.putExtra("fullDescription", "Description: " + speciesList[position].description + " " + speciesList[position].extendedDescription)
+            intent.putExtra("name", species[position].name)
+            intent.putExtra("fullName", species[position].fullName)
+            intent.putExtra("httpRequestName", species[position].httpRequestName)
+            intent.putExtra("state", species[position].state)
+            intent.putExtra("fullDescription", "Description: " + species[position].description + " " + species[position].extendedDescription)
             startActivity(intent)
         }
     }
 
     private fun setUpMap() {
+        if(arguments?.getInt(ARG_SECTION_NUMBER) == 2) {
+            (full_map as SupportMapFragment).getMapAsync {googleMap ->
+                species.forEach { specificSpecies ->
+                    FirebaseStorage.getInstance().reference.child("coords/${specificSpecies.httpRequestName}")
+                        .listAll().addOnSuccessListener { listResult ->
+                            listResult?.items?.forEach { storageReference ->
+                                storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
+                                    val (lat, lon) = String(byteArray).split(" ")
+                                    googleMap?.addMarker(MarkerOptions().position(LatLng(lat.toDouble(), lon.toDouble())))
+                                }
+                            }
+                        }
+                }
 
+            }
+        }
     }
 
     override fun onStart() {
         super.onStart()
 
+        Log.e("Smail", "${arguments?.getInt(ARG_SECTION_NUMBER)}")
         if(arguments?.getInt(ARG_SECTION_NUMBER) == 1) {
             setUpListView()
         } else if (arguments?.getInt(ARG_SECTION_NUMBER) == 2) {
@@ -72,16 +88,8 @@ class TabFragment : Fragment() {
     }
 
     companion object {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
         private const val ARG_SECTION_NUMBER = "section_number"
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
         @JvmStatic
         fun newInstance(sectionNumber: Int): TabFragment {
             return TabFragment().apply {

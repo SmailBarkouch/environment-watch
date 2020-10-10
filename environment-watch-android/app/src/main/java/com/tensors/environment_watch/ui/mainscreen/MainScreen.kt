@@ -8,6 +8,7 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.tensors.environment_watch.R
+import com.tensors.environment_watch.api.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainScreen : AppCompatActivity() {
