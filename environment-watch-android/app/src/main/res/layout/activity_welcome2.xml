@@ -53,7 +53,7 @@
         android:textColor="@android:color/white"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:layout_marginBottom="200dp"
+        android:layout_marginBottom="100dp"
         android:text="We thank you for using this app, happy animal watching!"/>
 
     <Button
