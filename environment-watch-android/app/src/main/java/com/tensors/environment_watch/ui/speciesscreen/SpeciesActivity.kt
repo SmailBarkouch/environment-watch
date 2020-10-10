@@ -72,7 +72,6 @@ class SpeciesActivity : AppCompatActivity() {
                 .listAll().addOnSuccessListener { listResult ->
                     listResult?.items?.forEach { storageReference ->
                         storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
-                            Log.e("SmailBytes2", String(byteArray))
                             val (lat, lon) = String(byteArray).split(" ")
                             googleMap?.addMarker(
                                 MarkerOptions().position(
@@ -168,7 +167,6 @@ class SpeciesActivity : AppCompatActivity() {
         } else {
 
         }
-
     }
 
     private fun interpretImageMatches(image: Bitmap): Boolean {

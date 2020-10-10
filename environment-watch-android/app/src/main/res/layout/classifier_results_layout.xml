@@ -1,47 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue"
+    android:background="@drawable/success"
     android:orientation="vertical">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:padding="5dp"
-        android:textColor="@android:color/white"
-        android:paddingTop="30dp"
-        android:text=""
+        android:padding="5sp"
+        android:layout_marginTop="130sp"
+        android:text="Success!"
         android:textSize="30sp"
         android:textStyle="bold" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="280sp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="20sp"
         android:gravity="center"
         android:textColor="@android:color/white"
         android:layout_gravity="center_horizontal"
-        android:textSize="30dp"
+        android:textSize="25sp"
         android:fontFamily="sans-serif-condensed-medium"
-        android:text=""/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:textColor="@android:color/white"
-        android:layout_gravity="center_vertical"
-        android:text=""/>
+        android:text="Thank you for submitting an image of this endangered species. You're contribution will help scientists and enthusiests everywhere to monitor their populations and locations."/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="5dp"
-        android:layout_marginBottom="250dp"
+        android:layout_marginTop="100sp"
+        android:padding="5sp"
         android:gravity="center"
         android:layout_gravity="bottom|center">
 
@@ -51,8 +42,8 @@
             android:layout_height="wrap_content"
             android:background="@android:color/holo_green_dark"
             android:textColor="@android:color/white"
-            android:padding="5dp"
-            android:layout_marginEnd="5dp"
+            android:padding="5sp"
+            android:layout_marginEnd="5sp"
             android:text="Back to homescreen"/>
 
         <Button
@@ -65,4 +56,4 @@
             android:text="Quit app"/>
     </LinearLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>
