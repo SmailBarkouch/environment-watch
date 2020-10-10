@@ -5,9 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -78,7 +81,11 @@ class SpeciesActivity : AppCompatActivity() {
         }
 
         specific_species_gallery.setOnClickListener {
-            startActivity(Intent(this, GalleryActivity::class.java))
+            val intent = Intent(this, GalleryActivity::class.java)
+
+
+            intent.putExtra("requestName", species.httpRequestName)
+            startActivity(intent)
         }
     }
 
@@ -172,7 +179,7 @@ class SpeciesActivity : AppCompatActivity() {
 
     }
 
-    fun getImageUri(inContext: Context, inImage: Bitmap): Uri? {
+    private fun getImageUri(inContext: Context, inImage: Bitmap): Uri? {
         inImage.compress(Bitmap.CompressFormat.JPEG, 100, ByteArrayOutputStream())
         return Uri.parse(
             MediaStore.Images.Media.insertImage(
@@ -182,15 +189,6 @@ class SpeciesActivity : AppCompatActivity() {
                 null
             )
         )
-    }
-
-    fun getRealPathFromURI(uri: Uri?): String? {
-        val cursor = contentResolver.query(uri!!, null, null, null, null)
-        cursor?.moveToFirst()
-        val cursorString =
-            cursor?.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA))
-        cursor?.close()
-        return cursorString
     }
 
 }
