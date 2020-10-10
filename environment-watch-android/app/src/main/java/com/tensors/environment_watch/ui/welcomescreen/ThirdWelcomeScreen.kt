@@ -6,15 +6,17 @@ import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
 import com.tensors.environment_watch.R
 import com.tensors.environment_watch.ui.mainscreen.MainScreen
-import kotlinx.android.synthetic.main.activity_welcome2.*
+import kotlinx.android.synthetic.main.activity_welcome3.*
 
-class SecondWelcomeActivity : AppCompatActivity() {
+class ThirdWelcomeScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_welcome2)
+        setContentView(R.layout.activity_welcome3)
 
-        next_welcome.setOnClickListener {
-            startActivity(Intent(this, ThirdWelcomeScreen::class.java))
+        take_me_home.setOnClickListener {
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("finishedWelcome", true).apply()
+            startActivity(Intent(this, MainScreen::class.java))
+            finishAffinity()
         }
     }
 }

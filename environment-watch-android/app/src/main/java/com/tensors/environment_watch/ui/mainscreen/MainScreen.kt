@@ -80,16 +80,4 @@ class MainScreen : AppCompatActivity() {
             image = data?.data
         }
     }
-
-    private fun getImageUri(inContext: Context, inImage: Bitmap): Uri? {
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, ByteArrayOutputStream())
-        return Uri.parse(
-            MediaStore.Images.Media.insertImage(
-                inContext.contentResolver,
-                inImage,
-                UUID.randomUUID().toString(),
-                null
-            )
-        )
-    }
 }

@@ -5,8 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Color
+import android.location.Location
 import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -23,6 +24,15 @@ import com.tensors.environment_watch.R
 import com.tensors.environment_watch.api.Species
 import kotlinx.android.synthetic.main.activity_species.*
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.common.FileUtil
+import org.tensorflow.lite.support.common.TensorProcessor
+import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
+import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
+import org.tensorflow.lite.support.label.TensorLabel
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -34,6 +44,7 @@ import java.util.*
 class SpeciesActivity : AppCompatActivity() {
     lateinit var species: Species
     lateinit var tfLite: Interpreter
+    lateinit var accuracy: String
 
     private fun loadModelFile(): MappedByteBuffer {
         val fileDescriptor = assets.openFd("bird_classification.tflite")
@@ -57,12 +68,12 @@ class SpeciesActivity : AppCompatActivity() {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
-            FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
+            FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}.txt")
                 .listAll().addOnSuccessListener { listResult ->
-                    Log.e("Smail", "Why: ${listResult.items.size}")
                     listResult?.items?.forEach { storageReference ->
-                        storageReference.getBytes(1024 * 1024).addOnSuccessListener {
-                            val (lat, lon) = String(it).split(" ")
+                        storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
+                            Log.e("SmailBytes2", String(byteArray))
+                            val (lat, lon) = String(byteArray).split(" ")
                             googleMap?.addMarker(
                                 MarkerOptions().position(
                                     LatLng(
@@ -71,6 +82,7 @@ class SpeciesActivity : AppCompatActivity() {
                                     )
                                 )
                             )
+
                         }
                     }
                 }
@@ -152,46 +164,63 @@ class SpeciesActivity : AppCompatActivity() {
         val image = data?.extras?.get("data")
 
         if (image != null && interpretImageMatches(image as Bitmap)) {
-
-            uploadImage(image as Bitmap)
+            uploadImage(image)
         } else {
-            // Some other stuff
+
         }
 
     }
 
     private fun interpretImageMatches(image: Bitmap): Boolean {
-        val input = Array(160) {
-            Array(160) {
-                FloatArray(3)
+        val imageTensorIndex = 0
+        val imageShape = tfLite.getInputTensor(imageTensorIndex).shape()
+
+        val imageSizeY = imageShape[1]
+        val imageSizeX = imageShape[2]
+        val imageDataType = tfLite.getInputTensor(imageTensorIndex).dataType()
+
+        val probabilityTensorIndex = 0
+        val probabilityShape = tfLite.getOutputTensor(probabilityTensorIndex).shape()
+
+        val probabilityDataType = tfLite.getOutputTensor(probabilityTensorIndex).dataType()
+
+        var inputImageBuffer = TensorImage(imageDataType)
+        val outputProbabilityBuffer =
+            TensorBuffer.createFixedSize(probabilityShape, probabilityDataType)
+        val probabilityProcessor = TensorProcessor.Builder().add(NormalizeOp(0.0f, 255.0f)).build()
+
+        val cropSize = image.width.coerceAtMost(image.height)
+        inputImageBuffer.load(image)
+        inputImageBuffer = ImageProcessor.Builder().add(ResizeWithCropOrPadOp(cropSize, cropSize))
+            .add(ResizeOp(imageSizeX, imageSizeY, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR)).build()
+            .process(inputImageBuffer)
+        tfLite.run(inputImageBuffer.buffer, outputProbabilityBuffer.buffer.rewind())
+
+        var labels = mutableListOf("")
+        try {
+            labels = FileUtil.loadLabels(this, "labels.txt")
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+        val labeledProbability =
+            TensorLabel(labels, probabilityProcessor.process(outputProbabilityBuffer))
+                .mapWithFloatValue
+        val maxValueInMap: Float = Collections.max(labeledProbability.values)
+
+        for (entry in labeledProbability.entries) {
+            if (entry.value == maxValueInMap) {
+                accuracy = entry.value.toString()
+            }
+
+            if (entry.value >= 0.06) {
+                return true
             }
         }
 
-        val resizedBitmap = Bitmap.createScaledBitmap(image, 160, 160, false)
-
-        for(x in 0..159) {
-            for(y in 0..159) {
-//                val color = Integer.toHexString(resizedBitmap.getPixel(x, y))
-                val color = resizedBitmap.getPixel(x, y)
-
-                input[x][y][0] = Color.red(color).toFloat()
-                input[x][y][1] = Color.green(color).toFloat()
-                input[x][y][2] = Color.blue(color).toFloat()
-            }
-        }
-
-        val output = FloatArray(5)
-
-        tfLite.run(input, output)
-
-        Log.e("Smail", "1: ${output[0]}, 2: ${output[1]}, 3: ${output[2]}, 4: ${output[3]}, 5: ${output[4]},")
-
-        return true
+        return false
     }
 
     private fun uploadImage(image: Bitmap) {
-        val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -209,34 +238,45 @@ class SpeciesActivity : AppCompatActivity() {
             return
         }
 
-        val location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        val lat = location?.latitude
-        val lon = location?.longitude
-        // Under here you put your code where you upload the images to firebase with the coordinates
-
-        val tempUri = getImageUri(applicationContext, image)
-
-        FirebaseStorage.getInstance().reference.child("images/${species.httpRequestName}/${UUID.randomUUID()}")
-            .putFile(tempUri!!)
-            .addOnSuccessListener { p0 ->
-                Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_LONG).show()
-            }
-            .addOnFailureListener { p0 ->
-                Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        if(connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo.isConnected) {
+            val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val providers: List<String> = locationManager.getProviders(true)
+            var bestLocation: Location? = null
+            for (provider in providers) {
+                val location = locationManager.getLastKnownLocation(provider) ?: continue
+                if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
+                    bestLocation = location
+                }
             }
 
-        val tempFile = File.createTempFile(UUID.randomUUID().toString(), null)
-        tempFile.writeText("$lat $lon")
-        FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}/${UUID.randomUUID()}.txt")
-            .putFile(tempFile.toUri())
-            .addOnSuccessListener { p0 ->
-                Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_LONG).show()
-            }
-            .addOnFailureListener { p0 ->
-                Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+            val lat = bestLocation?.latitude
+            val lon = bestLocation?.longitude
+
+            if (lat != null && lon != null) {
+                val tempFile = File.createTempFile(UUID.randomUUID().toString(), null)
+                tempFile.writeText("$lat $lon")
+                FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}/${UUID.randomUUID()}.txt")
+                    .putFile(tempFile.toUri())
+                    .addOnSuccessListener { p0 ->
+                        Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_LONG).show()
+                    }
+                    .addOnFailureListener { p0 ->
+                        Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+                    }
             }
 
-        // after uploading I will go to another activity
+            val tempUri = getImageUri(applicationContext, image)
+            FirebaseStorage.getInstance().reference.child("images/${species.httpRequestName}/${UUID.randomUUID()}")
+                .putFile(tempUri!!)
+                .addOnSuccessListener { p0 ->
+                    Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_LONG).show()
+                }
+                .addOnFailureListener { p0 ->
+                    Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+                }
+        }
+
         startActivity(Intent(this, ResultsActivity::class.java))
 
     }

@@ -43,33 +43,12 @@ class TabFragment : Fragment() {
         }
     }
 
-    private fun setUpMap() {
-        if(arguments?.getInt(ARG_SECTION_NUMBER) == 2) {
-            (full_map as SupportMapFragment).getMapAsync {googleMap ->
-                species.forEach { specificSpecies ->
-                    FirebaseStorage.getInstance().reference.child("coords/${specificSpecies.httpRequestName}")
-                        .listAll().addOnSuccessListener { listResult ->
-                            listResult?.items?.forEach { storageReference ->
-                                storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
-                                    val (lat, lon) = String(byteArray).split(" ")
-                                    googleMap?.addMarker(MarkerOptions().position(LatLng(lat.toDouble(), lon.toDouble())))
-                                }
-                            }
-                        }
-                }
-
-            }
-        }
-    }
-
     override fun onStart() {
         super.onStart()
 
         Log.e("Smail", "${arguments?.getInt(ARG_SECTION_NUMBER)}")
         if(arguments?.getInt(ARG_SECTION_NUMBER) == 1) {
             setUpListView()
-        } else if (arguments?.getInt(ARG_SECTION_NUMBER) == 2) {
-            setUpMap()
         }
     }
 
