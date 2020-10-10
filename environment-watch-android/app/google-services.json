@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "799815865988",
+    "firebase_url": "https://environment-watch-22679.firebaseio.com",
+    "project_id": "environment-watch-22679",
+    "storage_bucket": "environment-watch-22679.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:799815865988:android:441bf97c7fed6bc4c254d1",
+        "android_client_info": {
+          "package_name": "com.tensors.environment_watch"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "799815865988-bulbv01dpisu1r1k59ncqonr798pb9ai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3u28sUzEG-2blHBDKutD9Y7K3fDvC9HM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "799815865988-bulbv01dpisu1r1k59ncqonr798pb9ai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -5,26 +5,30 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.apptakk.http_request.HttpRequest
-import com.apptakk.http_request.HttpRequestTask
+import androidx.core.net.toUri
+import com.google.firebase.storage.FirebaseStorage
 import com.tensors.environment_watch.R
 import com.tensors.environment_watch.api.Species
 import kotlinx.android.synthetic.main.activity_species.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.util.*
 
 
 class SpeciesActivity : AppCompatActivity() {
     lateinit var species: Species
-    lateinit var filePath: Uri
+    private var job = Job()
+    private val uiScope = CoroutineScope(Dispatchers.Main + job)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +92,7 @@ class SpeciesActivity : AppCompatActivity() {
             && grantResults[1] == PackageManager.PERMISSION_GRANTED
             && grantResults[2] == PackageManager.PERMISSION_GRANTED
         ) {
-            Toast.makeText(this, "Permission granted", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Permissions granted", Toast.LENGTH_LONG).show()
             val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             startActivityForResult(cameraIntent, 0)
         } else {
@@ -96,23 +100,10 @@ class SpeciesActivity : AppCompatActivity() {
         }
     }
 
-    private fun getImageUri(photo: Bitmap): Uri? {
-        val bytes = ByteArrayOutputStream()
-        photo.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-        val path = MediaStore.Images.Media.insertImage(
-            contentResolver,
-            photo,
-            "pic",
-            null
-        )
-        return Uri.parse(path)
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         val image = data!!.extras!!.get("data") as Bitmap
-        filePath = getImageUri(image)!!
 
         if (interpretImageMatches(image)) {
 
@@ -154,40 +145,52 @@ class SpeciesActivity : AppCompatActivity() {
         val lon = location?.longitude
         // Under here you put your code where you upload the images to firebase with the coordinates
 
-        HttpRequestTask(
-            HttpRequest(
-                "10.0.0.207",
-                HttpRequest.POST,
-                getStringFromBitmap(image)
-            )
-        ) { response ->
-            Toast.makeText(applicationContext, "Uploaded successfully: ${response.code}", Toast.LENGTH_LONG).show()
-        }.execute()
+        val tempUri = getImageUri(applicationContext, image)
+
+        FirebaseStorage.getInstance().reference.child("images/${species.httpRequestName}/${UUID.randomUUID()}")
+            .putFile(tempUri!!)
+            .addOnSuccessListener { p0 ->
+                Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_LONG).show()
+            }
+            .addOnFailureListener { p0 ->
+                Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+            }
+
+        val tempFile = File.createTempFile(UUID.randomUUID().toString(), null)
+        tempFile.writeText("$lat $lon")
+        FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}/${UUID.randomUUID()}.txt")
+            .putFile(tempFile.toUri())
+            .addOnSuccessListener { p0 ->
+                Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_LONG).show()
+            }
+            .addOnFailureListener { p0 ->
+                Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+            }
 
         // after uploading I will go to another activity
         startActivity(Intent(this, ResultsActivity::class.java))
 
     }
 
-    private fun getStringFromBitmap(bitmapPicture: Bitmap): String? {
-        val COMPRESSION_QUALITY = 100
-        val encodedImage: String
-        val byteArrayBitmapStream = ByteArrayOutputStream()
-
-        bitmapPicture.compress(
-            Bitmap.CompressFormat.PNG, COMPRESSION_QUALITY,
-            byteArrayBitmapStream
+    fun getImageUri(inContext: Context, inImage: Bitmap): Uri? {
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, ByteArrayOutputStream())
+        return Uri.parse(
+            MediaStore.Images.Media.insertImage(
+                inContext.contentResolver,
+                inImage,
+                UUID.randomUUID().toString(),
+                null
+            )
         )
-
-        val byteArray = byteArrayBitmapStream.toByteArray()
-        encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
-
-        return encodedImage
     }
 
-    private fun getBitmapFromString(stringPicture: String): Bitmap? {
-        val decodedString: ByteArray = Base64.decode(stringPicture, Base64.DEFAULT)
-        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+    fun getRealPathFromURI(uri: Uri?): String? {
+        val cursor = contentResolver.query(uri!!, null, null, null, null)
+        cursor?.moveToFirst()
+        val cursorString =
+            cursor?.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA))
+        cursor?.close()
+        return cursorString
     }
 
 }
