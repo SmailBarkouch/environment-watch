@@ -2,29 +2,22 @@ package com.tensors.environment_watch.ui.mainscreen
 
 import android.Manifest
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
-import android.view.ViewGroup
+import android.util.Log
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.storage.FirebaseStorage
 import com.tensors.environment_watch.R
 import com.tensors.environment_watch.api.SectionsPagerAdapter
-import kotlinx.android.synthetic.main.activity_main.*
-import java.io.ByteArrayOutputStream
-import java.io.File
 import java.util.*
 
 class MainScreen : AppCompatActivity() {
@@ -58,6 +51,8 @@ class MainScreen : AppCompatActivity() {
                 .setPositiveButton("Submit"
                 ) { dialog, id ->
                     val animalName = (dialog as Dialog).findViewById<EditText>(R.id.submit_species_name).text.toString()
+                    Log.e("Smail", "31231: ${image != null} && ${animalName != ""}")
+
                     if(image != null && animalName != "") {
                         val randomName = UUID.randomUUID().toString()
                         FirebaseStorage.getInstance().reference.child("submissions/${animalName}/${randomName}")
@@ -89,10 +84,11 @@ class MainScreen : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED
-            && grantResults[1] == PackageManager.PERMISSION_GRANTED
+        if (grantResults[0] != PackageManager.PERMISSION_GRANTED
+            && grantResults[1] != PackageManager.PERMISSION_GRANTED
         ) {
             Toast.makeText(this, "We are unable to do alerts if you do not provide your location.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 

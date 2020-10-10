@@ -69,7 +69,7 @@ class SpeciesActivity : AppCompatActivity() {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
-            FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}.txt")
+            FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
                 .listAll().addOnSuccessListener { listResult ->
                     listResult?.items?.forEach { storageReference ->
                         storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->

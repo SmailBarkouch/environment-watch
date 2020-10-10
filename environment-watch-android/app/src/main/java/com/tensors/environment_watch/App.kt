@@ -4,12 +4,10 @@ import android.Manifest
 import android.app.Application
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.net.ConnectivityManager
-import android.provider.MediaStore
 import androidx.core.app.NotificationCompat
 import com.google.firebase.storage.FirebaseStorage
 import com.tensors.environment_watch.api.species
@@ -53,7 +51,7 @@ class App: Application() {
                                                 lonLast = lon.toFloat()
                                             } else {
                                                 if ((currentTime - 180000..currentTime + 180000).contains(
-                                                        time.toInt()
+                                                        time.toLong()
                                                     ) && (latLast - 1..latLast + 1).contains(lat.toFloat()) && (lonLast - 1..lonLast + 1).contains(
                                                         lon.toFloat()
                                                     )
