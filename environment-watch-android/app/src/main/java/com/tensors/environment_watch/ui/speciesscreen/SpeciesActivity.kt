@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.PointF
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
@@ -17,45 +15,62 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolygonOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.tensors.environment_watch.R
-import com.tensors.environment_watch.api.GalleryAdapter
 import com.tensors.environment_watch.api.Species
-import kotlinx.android.synthetic.main.activity_gallery.*
 import kotlinx.android.synthetic.main.activity_species.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import org.tensorflow.lite.Interpreter
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileInputStream
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 import java.util.*
 
 
 class SpeciesActivity : AppCompatActivity() {
     lateinit var species: Species
-    private var job = Job()
-    private val uiScope = CoroutineScope(Dispatchers.Main + job)
+    lateinit var tfLite: Interpreter
+
+    private fun loadModelFile(): MappedByteBuffer {
+        val fileDescriptor = assets.openFd("bird_classification.tflite")
+        return FileInputStream(fileDescriptor.fileDescriptor).channel.map(
+            FileChannel.MapMode.READ_ONLY,
+            fileDescriptor.startOffset,
+            fileDescriptor.declaredLength
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_species)
 
+        try {
+            tfLite = Interpreter(loadModelFile())
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync {googleMap ->
+        mapFragment.getMapAsync { googleMap ->
             FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
                 .listAll().addOnSuccessListener { listResult ->
                     Log.e("Smail", "Why: ${listResult.items.size}")
                     listResult?.items?.forEach { storageReference ->
                         storageReference.getBytes(1024 * 1024).addOnSuccessListener {
                             val (lat, lon) = String(it).split(" ")
-                            googleMap?.addMarker(MarkerOptions().position(LatLng(lat.toDouble(), lon.toDouble())))
+                            googleMap?.addMarker(
+                                MarkerOptions().position(
+                                    LatLng(
+                                        lat.toDouble(),
+                                        lon.toDouble()
+                                    )
+                                )
+                            )
                         }
                     }
                 }
@@ -134,11 +149,11 @@ class SpeciesActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        val image = data!!.extras!!.get("data") as Bitmap
+        val image = data?.extras?.get("data")
 
-        if (interpretImageMatches(image)) {
+        if (image != null && interpretImageMatches(image as Bitmap)) {
 
-            uploadImage(image)
+            uploadImage(image as Bitmap)
         } else {
             // Some other stuff
         }
@@ -146,7 +161,30 @@ class SpeciesActivity : AppCompatActivity() {
     }
 
     private fun interpretImageMatches(image: Bitmap): Boolean {
-        // Some code here using the python classifier
+        val input = Array(160) {
+            Array(160) {
+                FloatArray(3)
+            }
+        }
+
+        val resizedBitmap = Bitmap.createScaledBitmap(image, 160, 160, false)
+
+        for(x in 0..159) {
+            for(y in 0..159) {
+//                val color = Integer.toHexString(resizedBitmap.getPixel(x, y))
+                val color = resizedBitmap.getPixel(x, y)
+
+                input[x][y][0] = Color.red(color).toFloat()
+                input[x][y][1] = Color.green(color).toFloat()
+                input[x][y][2] = Color.blue(color).toFloat()
+            }
+        }
+
+        val output = FloatArray(5)
+
+        tfLite.run(input, output)
+
+        Log.e("Smail", "1: ${output[0]}, 2: ${output[1]}, 3: ${output[2]}, 4: ${output[3]}, 5: ${output[4]},")
 
         return true
     }

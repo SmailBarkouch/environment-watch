@@ -3,21 +3,37 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="5dp">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        style="@style/TextAppearance.AppCompat.Headline"
+        android:textSize="30sp"
+        android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
         android:text="Animal Submission Forum" />
 
     <EditText
-        android:id="@+id/username"
+        android:id="@+id/submit_species_name"
         android:inputType="textEmailAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="Animal name"/>
+
+    <ImageButton
+        android:id="@+id/submit_species_image"
+        android:inputType="textEmailAddress"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/baseline_collections_black_18dp"
+        android:background="@null"
+        android:layout_gravity="center"
         android:layout_marginTop="16dp"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"

@@ -22,18 +22,21 @@
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:text="This is a platform to crowd source data about endangered and threatened species. The idea is simple:"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:textColor="@android:color/white"
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:text="   -    If you see any endangered species that we already have, use the app to take a photo of it and submit it online."/>
+
     <TextView
         android:layout_width="wrap_content"
         android:textColor="@android:color/white"
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:text="   -    Scientists and enthusiests will gain access to this information and will be able to model these populations."/>
+
     <TextView
         android:layout_width="wrap_content"
         android:textColor="@android:color/white"
