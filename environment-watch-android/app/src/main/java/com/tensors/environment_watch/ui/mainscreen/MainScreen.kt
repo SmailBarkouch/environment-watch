@@ -1,8 +1,10 @@
 package com.tensors.environment_watch.ui.mainscreen
 
+import android.Manifest
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -39,6 +41,18 @@ class MainScreen : AppCompatActivity() {
         tabs.setupWithViewPager(viewPager)
         val fab: FloatingActionButton = findViewById(R.id.fab)
 
+        if ( checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ), 1
+            )
+        }
+
+
         fab.setOnClickListener { view ->
             val alertDialog = AlertDialog.Builder(this).setView(layoutInflater.inflate(R.layout.activity_submit_request, null))
                 .setPositiveButton("Submit"
@@ -49,13 +63,13 @@ class MainScreen : AppCompatActivity() {
                         FirebaseStorage.getInstance().reference.child("submissions/${animalName}/${randomName}")
                             .putFile(image!!)
                             .addOnSuccessListener { p0 ->
-                                Toast.makeText(applicationContext, "Submitted", Toast.LENGTH_LONG).show()
+                                Toast.makeText(applicationContext, "Submitted", Toast.LENGTH_SHORT).show()
                             }
                             .addOnFailureListener { p0 ->
-                                Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+                                Toast.makeText(applicationContext, p0.message, Toast.LENGTH_SHORT).show()
                             }
                     } else {
-                        Toast.makeText(this, "Please don't leave fields empty.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Please don't leave fields empty.", Toast.LENGTH_SHORT).show()
                     }
 
                 }.create()
@@ -67,9 +81,18 @@ class MainScreen : AppCompatActivity() {
                 startActivityForResult(intent, 0)
             }
         }
+    }
 
-        alerts.setOnClickListener {
-            startActivity(Intent(this, AlertActivity::class.java))
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED
+            && grantResults[1] == PackageManager.PERMISSION_GRANTED
+        ) {
+            Toast.makeText(this, "We are unable to do alerts if you do not provide your location.", Toast.LENGTH_SHORT).show()
         }
     }
 

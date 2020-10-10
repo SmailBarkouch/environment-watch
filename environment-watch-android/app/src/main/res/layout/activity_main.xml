@@ -26,15 +26,6 @@
             android:padding="16dp"
             android:text="@string/app_name"
             android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title" />
-        <ImageButton
-            android:id="@+id/alerts"
-            android:src="@drawable/baseline_notifications_white_18dp"
-            android:background="@null"
-            android:layout_width="60dp"
-            android:layout_height="50dp"
-            android:minHeight="?actionBarSize"
-            android:layout_marginStart="130dp"
-            android:layout_gravity="end"/>
         </LinearLayout>
 
 

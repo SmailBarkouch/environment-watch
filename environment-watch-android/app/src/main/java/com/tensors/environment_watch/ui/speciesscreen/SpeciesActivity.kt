@@ -38,6 +38,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -72,7 +73,7 @@ class SpeciesActivity : AppCompatActivity() {
                 .listAll().addOnSuccessListener { listResult ->
                     listResult?.items?.forEach { storageReference ->
                         storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
-                            val (lat, lon) = String(byteArray).split(" ")
+                            val (lat, lon, time) = String(byteArray).split(" ")
                             googleMap?.addMarker(
                                 MarkerOptions().position(
                                     LatLng(
@@ -149,7 +150,7 @@ class SpeciesActivity : AppCompatActivity() {
             && grantResults[1] == PackageManager.PERMISSION_GRANTED
             && grantResults[2] == PackageManager.PERMISSION_GRANTED
         ) {
-            Toast.makeText(this, "Permissions granted", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
             val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             startActivityForResult(cameraIntent, 0)
         } else {
@@ -165,7 +166,7 @@ class SpeciesActivity : AppCompatActivity() {
         if (image != null && interpretImageMatches(image as Bitmap)) {
             uploadImage(image)
         } else {
-
+            Toast.makeText(this, "Your image was too blurry or not an image of the ${species.name}. Please try again.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -231,7 +232,7 @@ class SpeciesActivity : AppCompatActivity() {
             Toast.makeText(
                 this,
                 "Please accept location permissions in settings.",
-                Toast.LENGTH_LONG
+                Toast.LENGTH_SHORT
             ).show()
             return
         }
@@ -253,14 +254,14 @@ class SpeciesActivity : AppCompatActivity() {
 
             if (lat != null && lon != null) {
                 val tempFile = File.createTempFile(UUID.randomUUID().toString(), null)
-                tempFile.writeText("$lat $lon")
+                tempFile.writeText("$lat $lon ${Date().time}")
                 FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}/${UUID.randomUUID()}.txt")
                     .putFile(tempFile.toUri())
                     .addOnSuccessListener { p0 ->
-                        Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_LONG).show()
+                        Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener { p0 ->
-                        Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+                        Toast.makeText(applicationContext, p0.message, Toast.LENGTH_SHORT).show()
                     }
             }
 
@@ -268,10 +269,10 @@ class SpeciesActivity : AppCompatActivity() {
             FirebaseStorage.getInstance().reference.child("images/${species.httpRequestName}/${UUID.randomUUID()}")
                 .putFile(tempUri!!)
                 .addOnSuccessListener { p0 ->
-                    Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_LONG).show()
+                    Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { p0 ->
-                    Toast.makeText(applicationContext, p0.message, Toast.LENGTH_LONG).show()
+                    Toast.makeText(applicationContext, p0.message, Toast.LENGTH_SHORT).show()
                 }
         }
 

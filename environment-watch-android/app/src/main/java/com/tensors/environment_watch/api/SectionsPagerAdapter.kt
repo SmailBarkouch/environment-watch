@@ -30,7 +30,7 @@ class SectionsPagerAdapter(private val context: Context, fm: FragmentManager)
                         .listAll().addOnSuccessListener { listResult ->
                             listResult?.items?.forEach { storageReference ->
                                 storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
-                                    val (lat, lon) = String(byteArray).split(" ")
+                                    val (lat, lon, time) = String(byteArray).split(" ")
                                     googleMap?.addMarker(
                                         MarkerOptions().position(
                                             LatLng(
