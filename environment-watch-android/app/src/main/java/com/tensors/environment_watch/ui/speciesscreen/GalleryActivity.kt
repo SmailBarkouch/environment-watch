@@ -112,7 +112,7 @@ class GalleryActivity : AppCompatActivity() {
             .listAll().addOnSuccessListener { listResult ->
                 listResult?.items?.forEach { storageReference ->
                     storageReference.getBytes(1024 * 1024)
-                        .addOnSuccessListener { byteArray ->
+                        .addOnSuccessListener { firstByteArray ->
                             database.child("imageData").child(storageReference.name)
                                 .addListenerForSingleValueEvent(object : ValueEventListener {
                                     override fun onDataChange(snapshot: DataSnapshot) {
@@ -125,9 +125,9 @@ class GalleryActivity : AppCompatActivity() {
                                                 Log.e("SMAI", "ImageTime: $time, CurrentTime: $currentTime")
                                                 if((currentTime-86400000..currentTime+86400000).contains(time.toLong()) && byteArray != null) {
                                                     val bitmap = BitmapFactory.decodeByteArray(
-                                                        byteArray,
+                                                        firstByteArray,
                                                         0,
-                                                        byteArray.size
+                                                        firstByteArray.size
                                                     )
                                                     images.removeIf {
                                                         it == bitmap
