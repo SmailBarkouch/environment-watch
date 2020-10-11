@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationManager
 import android.net.ConnectivityManager
@@ -19,9 +20,16 @@ import androidx.core.net.toUri
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.tensors.environment_watch.R
+import com.tensors.environment_watch.api.GalleryAdapter
 import com.tensors.environment_watch.api.Species
+import kotlinx.android.synthetic.main.activity_gallery.*
 import kotlinx.android.synthetic.main.activity_species.*
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.FileUtil
@@ -40,7 +48,6 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.time.LocalDateTime
 import java.util.*
-
 
 class SpeciesActivity : AppCompatActivity() {
     lateinit var species: Species
@@ -68,20 +75,33 @@ class SpeciesActivity : AppCompatActivity() {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
+        val database = Firebase.database.reference
+
         mapFragment.getMapAsync { googleMap ->
             FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
                 .listAll().addOnSuccessListener { listResult ->
                     listResult?.items?.forEach { storageReference ->
                         storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
                             val (lat, lon, time) = String(byteArray).split(" ")
-                            googleMap?.addMarker(
-                                MarkerOptions().position(
-                                    LatLng(
-                                        lat.toDouble(),
-                                        lon.toDouble()
-                                    )
-                                )
-                            )
+                            database.child("imageData").child(storageReference.name).addListenerForSingleValueEvent(object:
+                                ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    Log.e("Smail", storageReference.name)
+                                    if(snapshot.value != null && (snapshot.child("dislikes").value as Long) > -2) {
+                                        googleMap?.addMarker(
+                                            MarkerOptions().position(
+                                                LatLng(
+                                                    lat.toDouble(),
+                                                    lon.toDouble()
+                                                )
+                                            )
+                                        )
+                                    }
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {}
+
+                            })
 
                         }
                     }
@@ -165,7 +185,7 @@ class SpeciesActivity : AppCompatActivity() {
 
         if (image != null && interpretImageMatches(image as Bitmap)) {
             uploadImage(image)
-        } else if(image == null && resultCode != RESULT_CANCELED)  {
+        } else if(resultCode != RESULT_CANCELED)  {
             Toast.makeText(this, "Your image was too blurry or not an image of the ${species.name}. Please try again.", Toast.LENGTH_SHORT).show()
         }
     }
@@ -252,10 +272,11 @@ class SpeciesActivity : AppCompatActivity() {
             val lat = bestLocation?.latitude
             val lon = bestLocation?.longitude
 
+            val name = UUID.randomUUID().toString()
             if (lat != null && lon != null) {
-                val tempFile = File.createTempFile(UUID.randomUUID().toString(), null)
+                val tempFile = File.createTempFile(name, null)
                 tempFile.writeText("$lat $lon ${Date().time}")
-                FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}/${UUID.randomUUID()}.txt")
+                FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}/${name}")
                     .putFile(tempFile.toUri())
                     .addOnSuccessListener { p0 ->
                         Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_SHORT).show()
@@ -266,7 +287,7 @@ class SpeciesActivity : AppCompatActivity() {
             }
 
             val tempUri = getImageUri(applicationContext, image)
-            FirebaseStorage.getInstance().reference.child("images/${species.httpRequestName}/${UUID.randomUUID()}")
+            FirebaseStorage.getInstance().reference.child("images/${species.httpRequestName}/$name")
                 .putFile(tempUri!!)
                 .addOnSuccessListener { p0 ->
                     Toast.makeText(applicationContext, "File Uploaded", Toast.LENGTH_SHORT).show()
@@ -274,6 +295,10 @@ class SpeciesActivity : AppCompatActivity() {
                 .addOnFailureListener { p0 ->
                     Toast.makeText(applicationContext, p0.message, Toast.LENGTH_SHORT).show()
                 }
+
+            val database = Firebase.database.reference
+            database.child("imageData").updateChildren(mutableMapOf(Pair(name, ImageData(name, 0, 0))) as Map<String, Any>)
+
         }
 
         startActivity(Intent(this, ResultsActivity::class.java))
@@ -293,3 +318,9 @@ class SpeciesActivity : AppCompatActivity() {
     }
 
 }
+
+class ImageData(
+    val name: String,
+    var likes: Long,
+    var dislikes: Long
+)

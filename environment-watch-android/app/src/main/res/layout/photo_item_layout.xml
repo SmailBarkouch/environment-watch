@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="300dp"
-    android:layout_height="300dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/border2"
     android:layout_gravity="center_horizontal"
@@ -10,9 +10,44 @@
 
     <ImageView
         android:id="@+id/photo"
-        android:minWidth="280dp"
-        android:minHeight="280dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_gravity="center"
+        android:layout_width="300dp"
+        android:layout_height="300dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/like_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="20dp"
+            android:src="@drawable/baseline_thumb_up_white_18dp" />
+
+        <TextView
+            android:id="@+id/like_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="130dp"
+            android:textSize="35dp"
+            android:text="1"/>
+
+        <TextView
+            android:id="@+id/dislike_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:textSize="35dp"
+            android:text="1"/>
+
+        <ImageButton
+            android:id="@+id/dislike_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/baseline_thumb_down_white_18dp"/>
+
+
+    </LinearLayout>
 
 </LinearLayout>

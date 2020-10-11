@@ -176,13 +176,6 @@ class MainScreen : AppCompatActivity() {
                                     latLast = lat.toFloat()
                                     lonLast = lon.toFloat()
                                 } else {
-                                    Log.e(
-                                        "Smail", "HERE1: time: ${(latLast - 1..latLast + 1).contains(
-                                            myLat!!.toFloat()
-                                        )}, ${(lonLast - 1..lonLast + 1).contains(
-                                            myLon!!.toFloat()
-                                        )}, "
-                                    )
                                     if ((currentTime - 120000..currentTime + 120000).contains(
                                             time.toLong()
                                         ) && (latLast - 1..latLast + 1).contains(lat.toFloat()) && (lonLast - 1..lonLast + 1).contains(

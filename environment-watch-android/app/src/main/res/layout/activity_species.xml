@@ -95,7 +95,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:paddingBottom="15dp"
-                android:text="The marks are where the bird has been."
+                android:text="The marks are where the bird has been spotted."
                 android:textStyle="bold" />
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
