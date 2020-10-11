@@ -32,53 +32,66 @@ class GalleryAdapter(context: Context, private val photos: List<Bitmap> = listOf
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         var photoView = convertView
 
-        if(photoView == null) {
+        if (photoView == null) {
             photoView = inflater.inflate(R.layout.photo_item_layout, null)
         }
 
-        photoView?.findViewById<ImageView>(R.id.photo)?.setImageBitmap(photos[position])
-        photoView?.findViewById<TextView>(R.id.like_amount)?.text = imageDatas[position].likes.toString()
-        photoView?.findViewById<TextView>(R.id.dislike_amount)?.text = imageDatas[position].dislikes.toString()
-        photoView?.findViewById<ImageButton>(R.id.like_button)?.setOnClickListener {
-            Log.e("Smail", "Like button clicked!")
-            if(!PreferenceManager.getDefaultSharedPreferences(App.instance).getBoolean("${imageDatas[position].name}_liked", false)) {
-                val database = Firebase.database.reference
-                imageDatas[position].likes += 1
-                database.child("imageData").child(imageDatas[position].name).child("likes").setValue(imageDatas[position].likes)
-                photoView.findViewById<TextView>(R.id.like_amount)?.text = (imageDatas[position].likes).toString()
-                val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
-                pref.putBoolean("${imageDatas[position].name}_liked", true)
-                pref.apply()
-            } else {
-                val database = Firebase.database.reference
-                imageDatas[position].likes -= 1
-                database.child("imageData").child(imageDatas[position].name).child("likes").setValue(imageDatas[position].likes)
-                photoView.findViewById<TextView>(R.id.like_amount)?.text = (imageDatas[position].likes).toString()
-                val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
-                pref.putBoolean("${imageDatas[position].name}_liked", false)
-                pref.apply()
-            }
-        }
+        try {
 
-        photoView?.findViewById<ImageButton>(R.id.dislike_button)?.setOnClickListener {
-            Log.e("Smail", "Dislike button clicked!")
-            if(!PreferenceManager.getDefaultSharedPreferences(App.instance).getBoolean("${imageDatas[position].name}_disliked", false)) {
-                val database = Firebase.database.reference
-                imageDatas[position].dislikes += 1
-                database.child("imageData").child(imageDatas[position].name).child("dislikes").setValue(imageDatas[position].dislikes)
-                photoView.findViewById<TextView>(R.id.dislike_amount)?.text = (imageDatas[position].dislikes).toString()
-                val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
-                pref.putBoolean("${imageDatas[position].name}_disliked", true)
-                pref.apply()
-            } else {
-                val database = Firebase.database.reference
-                imageDatas[position].dislikes -= 1
-                database.child("imageData").child(imageDatas[position].name).child("dislikes").setValue(imageDatas[position].dislikes)
-                photoView.findViewById<TextView>(R.id.dislike_amount)?.text = (imageDatas[position].dislikes).toString()
-                val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
-                pref.putBoolean("${imageDatas[position].name}_disliked", false)
-                pref.apply()
+
+            photoView?.findViewById<ImageView>(R.id.photo)?.setImageBitmap(photos[position])
+            photoView?.findViewById<TextView>(R.id.like_amount)?.text =
+                imageDatas[position].likes.toString()
+            photoView?.findViewById<TextView>(R.id.dislike_amount)?.text =
+                imageDatas[position].dislikes.toString()
+            photoView?.findViewById<ImageButton>(R.id.like_button)?.setOnClickListener {
+                Log.e("Smail", "Like button clicked!")
+                if (!PreferenceManager.getDefaultSharedPreferences(App.instance)
+                        .getBoolean("${imageDatas[position].name}_liked", false)
+                ) {
+                    val database = Firebase.database.reference
+                    imageDatas[position].likes += 1
+                    database.child("imageData").child(imageDatas[position].name).child("likes")
+                        .setValue(imageDatas[position].likes)
+                    photoView.findViewById<TextView>(R.id.like_amount)?.text =
+                        (imageDatas[position].likes).toString()
+                    val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
+                    pref.putBoolean("${imageDatas[position].name}_liked", true)
+                    pref.apply()
+                } else {
+                    val database = Firebase.database.reference
+                    imageDatas[position].likes -= 1
+                    database.child("imageData").child(imageDatas[position].name).child("likes").setValue(imageDatas[position].likes)
+                    photoView.findViewById<TextView>(R.id.like_amount)?.text = (imageDatas[position].likes).toString()
+                    val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
+                    pref.putBoolean("${imageDatas[position].name}_liked", false)
+                    pref.apply()
+                }
             }
+
+            photoView?.findViewById<ImageButton>(R.id.dislike_button)?.setOnClickListener {
+                Log.e("Smail", "Dislike button clicked!")
+                if(!PreferenceManager.getDefaultSharedPreferences(App.instance).getBoolean("${imageDatas[position].name}_disliked", false)) {
+                    val database = Firebase.database.reference
+                    imageDatas[position].dislikes += 1
+                    database.child("imageData").child(imageDatas[position].name).child("dislikes").setValue(imageDatas[position].dislikes)
+                    photoView.findViewById<TextView>(R.id.dislike_amount)?.text = (imageDatas[position].dislikes).toString()
+                    val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
+                    pref.putBoolean("${imageDatas[position].name}_disliked", true)
+                    pref.apply()
+                } else {
+                    val database = Firebase.database.reference
+                    imageDatas[position].dislikes -= 1
+                    database.child("imageData").child(imageDatas[position].name).child("dislikes")
+                        .setValue(imageDatas[position].dislikes)
+                    photoView.findViewById<TextView>(R.id.dislike_amount)?.text =
+                        (imageDatas[position].dislikes).toString()
+                    val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
+                    pref.putBoolean("${imageDatas[position].name}_disliked", false)
+                    pref.apply()
+                }
+            }
+        } catch (e: Exception) {
         }
 
         return photoView!! // it's never null but kotlin doesn't realize that
