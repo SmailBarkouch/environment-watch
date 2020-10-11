@@ -16,27 +16,26 @@ class SplashScreen: Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.splash_screen)
 
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.EmailBuilder().build())
         Handler().postDelayed({
-            val providers = arrayListOf(
-                AuthUI.IdpConfig.EmailBuilder().build())
-
-            startActivityForResult(
-                AuthUI.getInstance()
-                    .createSignInIntentBuilder()
-                    .setAvailableProviders(providers)
-                    .build(),
-                0)
+            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("finishedWelcome", false)) {
+                startActivityForResult(
+                    AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build(), 0)
+            } else {
+                startActivity(Intent(this, WelcomeActivity::class.java))
+                finish()
+            }
         }, 200)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == 0) {
-            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("finishedWelcome", false)) {
-                startActivity(Intent(this, MainScreen::class.java))
-            } else {
-                startActivity(Intent(this, WelcomeActivity::class.java))
-            }
+            startActivity(Intent(this, MainScreen::class.java))
             finish()
         }
     }

@@ -17,6 +17,7 @@ import com.google.firebase.ktx.Firebase
 import com.tensors.environment_watch.App
 import com.tensors.environment_watch.R
 import com.tensors.environment_watch.ui.speciesscreen.ImageData
+import kotlin.math.absoluteValue
 
 class GalleryAdapter(context: Context, private val photos: List<Bitmap> = listOf(), private val imageDatas: List<ImageData>): BaseAdapter() {
 
@@ -37,13 +38,11 @@ class GalleryAdapter(context: Context, private val photos: List<Bitmap> = listOf
         }
 
         try {
-
-
             photoView?.findViewById<ImageView>(R.id.photo)?.setImageBitmap(photos[position])
             photoView?.findViewById<TextView>(R.id.like_amount)?.text =
-                imageDatas[position].likes.toString()
+                imageDatas[position].likes.absoluteValue.toString()
             photoView?.findViewById<TextView>(R.id.dislike_amount)?.text =
-                imageDatas[position].dislikes.toString()
+                imageDatas[position].dislikes.absoluteValue.toString()
             photoView?.findViewById<ImageButton>(R.id.like_button)?.setOnClickListener {
                 Log.e("Smail", "Like button clicked!")
                 if (!PreferenceManager.getDefaultSharedPreferences(App.instance)
@@ -75,7 +74,7 @@ class GalleryAdapter(context: Context, private val photos: List<Bitmap> = listOf
                     val database = Firebase.database.reference
                     imageDatas[position].dislikes += 1
                     database.child("imageData").child(imageDatas[position].name).child("dislikes").setValue(imageDatas[position].dislikes)
-                    photoView.findViewById<TextView>(R.id.dislike_amount)?.text = (imageDatas[position].dislikes).toString()
+                    photoView.findViewById<TextView>(R.id.dislike_amount)?.text = (imageDatas[position].dislikes.absoluteValue).toString()
                     val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
                     pref.putBoolean("${imageDatas[position].name}_disliked", true)
                     pref.apply()
@@ -85,14 +84,13 @@ class GalleryAdapter(context: Context, private val photos: List<Bitmap> = listOf
                     database.child("imageData").child(imageDatas[position].name).child("dislikes")
                         .setValue(imageDatas[position].dislikes)
                     photoView.findViewById<TextView>(R.id.dislike_amount)?.text =
-                        (imageDatas[position].dislikes).toString()
+                        (imageDatas[position].dislikes.absoluteValue).toString()
                     val pref = PreferenceManager.getDefaultSharedPreferences(App.instance).edit()
                     pref.putBoolean("${imageDatas[position].name}_disliked", false)
                     pref.apply()
                 }
             }
-        } catch (e: Exception) {
-        }
+        } catch (e: Exception) {}
 
         return photoView!! // it's never null but kotlin doesn't realize that
     }
