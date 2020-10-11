@@ -106,7 +106,6 @@ class SpeciesActivity : AppCompatActivity() {
     }
 
     private fun dayCoords(googleMap: GoogleMap, database: DatabaseReference) {
-        Log.e("Smail", "2")
         googleMap.clear()
         FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
             .listAll().addOnSuccessListener { listResult ->
@@ -117,7 +116,7 @@ class SpeciesActivity : AppCompatActivity() {
                         database.child("imageData").child(storageReference.name).addListenerForSingleValueEvent(object:
                             ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
-                                if(snapshot.value != null && (snapshot.child("dislikes").value as Long + snapshot.child("likes").value as Long) > -2 && (currentTime-86400000..currentTime+86400000).contains(time.toLong())) {
+                                if(snapshot.value != null && (snapshot.child("likes").value as Long - snapshot.child("dislikes").value as Long) > -2 && (currentTime-86400000..currentTime+86400000).contains(time.toLong())) {
                                     googleMap.addMarker(
                                         MarkerOptions().position(
                                             LatLng(
@@ -149,7 +148,7 @@ class SpeciesActivity : AppCompatActivity() {
                         database.child("imageData").child(storageReference.name).addListenerForSingleValueEvent(object:
                             ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
-                                if(snapshot.value != null && (snapshot.child("dislikes").value as Long + snapshot.child("likes").value as Long)  > -2) {
+                                if(snapshot.value != null && (snapshot.child("likes").value as Long - snapshot.child("dislikes").value as Long)  > -2) {
                                     googleMap?.addMarker(
                                         MarkerOptions().position(
                                             LatLng(
