@@ -165,7 +165,7 @@ class SpeciesActivity : AppCompatActivity() {
 
         if (image != null && interpretImageMatches(image as Bitmap)) {
             uploadImage(image)
-        } else {
+        } else if(image == null && resultCode != RESULT_CANCELED)  {
             Toast.makeText(this, "Your image was too blurry or not an image of the ${species.name}. Please try again.", Toast.LENGTH_SHORT).show()
         }
     }
