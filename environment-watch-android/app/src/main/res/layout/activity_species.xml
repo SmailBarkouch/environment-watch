@@ -94,7 +94,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:paddingBottom="15dp"
                 android:text="The marks are where the bird has been spotted."
                 android:textStyle="bold" />
 
@@ -121,6 +120,7 @@
         </LinearLayout>
 
     </LinearLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/species_fab"
         android:layout_width="wrap_content"
@@ -128,4 +128,14 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         app:srcCompat="@drawable/ic_baseline_add_a_photo_24" />
+
+    <ImageButton
+        android:id="@+id/day_coords"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_baseline_today_24"
+        android:layout_margin="16dp"
+        android:layout_gravity="start|bottom"
+        android:contentDescription="Images for today only." />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -22,14 +22,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.viewpager.widget.ViewPager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.tabs.TabLayout
 import com.google.firebase.storage.FirebaseStorage
 import com.tensors.environment_watch.R
-import com.tensors.environment_watch.api.SectionsPagerAdapter
+import com.tensors.environment_watch.api.SectionsAdapter
 import com.tensors.environment_watch.api.species
 import com.tensors.environment_watch.ui.SplashScreen
+import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 class MainScreen : AppCompatActivity() {
@@ -39,12 +38,9 @@ class MainScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
-        val viewPager: ViewPager = findViewById(R.id.view_pager)
-        viewPager.adapter = sectionsPagerAdapter
-        val tabs: TabLayout = findViewById(R.id.tabs)
-        tabs.setupWithViewPager(viewPager)
-        val fab: FloatingActionButton = findViewById(R.id.fab)
+        val sectionsAdapter = SectionsAdapter(this, supportFragmentManager)
+        view_pager.adapter = sectionsAdapter
+        tabs.setupWithViewPager(view_pager)
 
         if ( checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
             || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -85,7 +81,7 @@ class MainScreen : AppCompatActivity() {
         }
 
 
-        fab.setOnClickListener { view ->
+        email_animals.setOnClickListener { view ->
             val alertDialog = AlertDialog.Builder(this).setView(
                 layoutInflater.inflate(
                     R.layout.activity_submit_request,

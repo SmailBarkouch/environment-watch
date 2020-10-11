@@ -17,11 +17,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -53,6 +56,7 @@ class SpeciesActivity : AppCompatActivity() {
     lateinit var species: Species
     lateinit var tfLite: Interpreter
     lateinit var accuracy: String
+    var dayView = false
 
     private fun loadModelFile(): MappedByteBuffer {
         val fileDescriptor = assets.openFd("bird_classification.tflite")
@@ -78,37 +82,92 @@ class SpeciesActivity : AppCompatActivity() {
         val database = Firebase.database.reference
 
         mapFragment.getMapAsync { googleMap ->
-            FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
-                .listAll().addOnSuccessListener { listResult ->
-                    listResult?.items?.forEach { storageReference ->
-                        storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
-                            val (lat, lon, time) = String(byteArray).split(" ")
-                            database.child("imageData").child(storageReference.name).addListenerForSingleValueEvent(object:
-                                ValueEventListener {
-                                override fun onDataChange(snapshot: DataSnapshot) {
-                                    Log.e("Smail", storageReference.name)
-                                    if(snapshot.value != null && (snapshot.child("dislikes").value as Long) > -2) {
-                                        googleMap?.addMarker(
-                                            MarkerOptions().position(
-                                                LatLng(
-                                                    lat.toDouble(),
-                                                    lon.toDouble()
-                                                )
-                                            )
-                                        )
-                                    }
-                                }
+            everCoords(googleMap, database)
+        }
 
-                                override fun onCancelled(error: DatabaseError) {}
-
-                            })
-
-                        }
-                    }
+        day_coords.setOnClickListener {
+            dayView = if(dayView) {
+                Toast.makeText(this, "Switching view to show all images ever.", Toast.LENGTH_SHORT).show()
+                mapFragment.getMapAsync { googleMap ->
+                    everCoords(googleMap, database)
                 }
+                false
+            } else {
+
+                Toast.makeText(this, "Switching view to just show the last 24 hours of images.", Toast.LENGTH_SHORT).show()
+                mapFragment.getMapAsync { googleMap ->
+                    dayCoords(googleMap, database)
+                }
+                true
+            }
         }
 
         setUpView()
+    }
+
+    private fun dayCoords(googleMap: GoogleMap, database: DatabaseReference) {
+        Log.e("Smail", "2")
+        googleMap.clear()
+        FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
+            .listAll().addOnSuccessListener { listResult ->
+                listResult?.items?.forEach { storageReference ->
+                    storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
+                        val (lat, lon, time) = String(byteArray).split(" ")
+                        val currentTime = Date().time
+                        database.child("imageData").child(storageReference.name).addListenerForSingleValueEvent(object:
+                            ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                if(snapshot.value != null && (snapshot.child("dislikes").value as Long) > -2 && (currentTime-86400000..currentTime+86400000).contains(time.toLong())) {
+                                    googleMap.addMarker(
+                                        MarkerOptions().position(
+                                            LatLng(
+                                                lat.toDouble(),
+                                                lon.toDouble()
+                                            )
+                                        )
+                                    )
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {}
+
+                        })
+
+                    }
+                }
+            }
+    }
+
+    private fun everCoords(googleMap: GoogleMap, database: DatabaseReference) {
+        Log.e("Smail", "1")
+        googleMap.clear()
+        FirebaseStorage.getInstance().reference.child("coords/${species.httpRequestName}")
+            .listAll().addOnSuccessListener { listResult ->
+                listResult?.items?.forEach { storageReference ->
+                    storageReference.getBytes(1024 * 1024).addOnSuccessListener { byteArray ->
+                        val (lat, lon, time) = String(byteArray).split(" ")
+                        database.child("imageData").child(storageReference.name).addListenerForSingleValueEvent(object:
+                            ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                if(snapshot.value != null && (snapshot.child("dislikes").value as Long) > -2) {
+                                    googleMap?.addMarker(
+                                        MarkerOptions().position(
+                                            LatLng(
+                                                lat.toDouble(),
+                                                lon.toDouble()
+                                            )
+                                        )
+                                    )
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {}
+
+                        })
+
+                    }
+                }
+            }
     }
 
     private fun setUpView() {

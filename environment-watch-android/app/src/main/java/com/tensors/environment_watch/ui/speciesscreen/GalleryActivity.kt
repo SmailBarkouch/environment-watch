@@ -31,7 +31,7 @@ class GalleryActivity : AppCompatActivity() {
 
         day_images.setOnClickListener {
             dayView = if(dayView) {
-                Snackbar.make(gallery_layout, "Switching view to to show all images ever.", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(gallery_layout, "Switching map to show all coordinates ever.", Snackbar.LENGTH_SHORT).show()
                 images.clear()
                 imageDatas.clear()
                 everImages()
@@ -39,7 +39,7 @@ class GalleryActivity : AppCompatActivity() {
             } else {
                 images.clear()
                 imageDatas.clear()
-                Snackbar.make(gallery_layout, "Switching view to just show the last 24 hours of images.", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(gallery_layout, "Switching map to just show the last 24 hours of coordinates.", Snackbar.LENGTH_SHORT).show()
                 dayImages()
                 true
             }
