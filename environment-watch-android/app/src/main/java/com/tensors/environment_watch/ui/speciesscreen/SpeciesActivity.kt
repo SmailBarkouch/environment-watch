@@ -117,7 +117,7 @@ class SpeciesActivity : AppCompatActivity() {
                         database.child("imageData").child(storageReference.name).addListenerForSingleValueEvent(object:
                             ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
-                                if(snapshot.value != null && (snapshot.child("dislikes").value as Long) > -2 && (currentTime-86400000..currentTime+86400000).contains(time.toLong())) {
+                                if(snapshot.value != null && (snapshot.child("dislikes").value as Long + snapshot.child("likes").value as Long) > -2 && (currentTime-86400000..currentTime+86400000).contains(time.toLong())) {
                                     googleMap.addMarker(
                                         MarkerOptions().position(
                                             LatLng(
@@ -149,7 +149,7 @@ class SpeciesActivity : AppCompatActivity() {
                         database.child("imageData").child(storageReference.name).addListenerForSingleValueEvent(object:
                             ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
-                                if(snapshot.value != null && (snapshot.child("dislikes").value as Long) > -2) {
+                                if(snapshot.value != null && (snapshot.child("dislikes").value as Long + snapshot.child("likes").value as Long)  > -2) {
                                     googleMap?.addMarker(
                                         MarkerOptions().position(
                                             LatLng(

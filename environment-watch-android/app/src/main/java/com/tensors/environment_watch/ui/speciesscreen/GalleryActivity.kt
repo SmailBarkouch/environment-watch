@@ -30,6 +30,13 @@ class GalleryActivity : AppCompatActivity() {
         everImages()
 
         day_images.setOnClickListener {
+            day_images.isClickable = false
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    day_images.isClickable = true
+                }
+
+            }, 2000)
             dayView = if(dayView) {
                 Snackbar.make(gallery_layout, "Switching map to show all coordinates ever.", Snackbar.LENGTH_SHORT).show()
                 images.clear()
@@ -57,7 +64,7 @@ class GalleryActivity : AppCompatActivity() {
                             database.child("imageData").child(storageReference.name)
                                 .addListenerForSingleValueEvent(object : ValueEventListener {
                                     override fun onDataChange(snapshot: DataSnapshot) {
-                                        if (snapshot.value != null) {
+                                        if (snapshot.value != null && byteArray != null) {
                                             val bitmap = BitmapFactory.decodeByteArray(
                                                 byteArray,
                                                 0,
@@ -116,7 +123,7 @@ class GalleryActivity : AppCompatActivity() {
                                                 val (lat, lon, time) = String(byteArray).split(" ")
                                                 val currentTime = Date().time
                                                 Log.e("SMAI", "ImageTime: $time, CurrentTime: $currentTime")
-                                                if((currentTime-86400000..currentTime+86400000).contains(time.toLong())) {
+                                                if((currentTime-86400000..currentTime+86400000).contains(time.toLong()) && byteArray != null) {
                                                     val bitmap = BitmapFactory.decodeByteArray(
                                                         byteArray,
                                                         0,
@@ -125,6 +132,7 @@ class GalleryActivity : AppCompatActivity() {
                                                     images.removeIf {
                                                         it == bitmap
                                                     }
+                                                    images.add(bitmap)
                                                     imageDatas.removeIf {
                                                         it.name == storageReference.name
                                                     }
@@ -136,9 +144,7 @@ class GalleryActivity : AppCompatActivity() {
                                                             snapshot.child("dislikes").value as Long,
                                                         )
                                                     )
-                                                    images.add(
-                                                        bitmap
-                                                    )
+
                                                 }
                                                 gallery_of_photos.adapter =
                                                     GalleryAdapter(

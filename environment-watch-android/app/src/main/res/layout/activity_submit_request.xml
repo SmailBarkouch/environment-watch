@@ -13,7 +13,7 @@
         android:layout_marginTop="10dp"
         android:textSize="30sp"
         android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
-        android:text="Animal Submission Forum" />
+        android:text="Animal Submission Form" />
 
     <EditText
         android:id="@+id/submit_species_name"
