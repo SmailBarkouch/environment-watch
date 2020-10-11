@@ -286,11 +286,12 @@ class SpeciesActivity : AppCompatActivity() {
         val maxValueInMap: Float = Collections.max(labeledProbability.values)
 
         for (entry in labeledProbability.entries) {
+            Log.e("Smail", "Max: ${entry.key}, ${entry.value}")
             if (entry.value == maxValueInMap) {
                 accuracy = entry.value.toString()
             }
 
-            if (entry.value >= 0.06) {
+            if (entry.value >= 0.03) {
                 return true
             }
         }
