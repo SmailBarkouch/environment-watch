@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceManager
+import com.firebase.ui.auth.AuthUI
 import com.tensors.environment_watch.R
 import com.tensors.environment_watch.ui.mainscreen.MainScreen
 import com.tensors.environment_watch.ui.welcomescreen.WelcomeActivity
@@ -16,13 +17,27 @@ class SplashScreen: Activity() {
         setContentView(R.layout.splash_screen)
 
         Handler().postDelayed({
+            val providers = arrayListOf(
+                AuthUI.IdpConfig.EmailBuilder().build())
+
+            startActivityForResult(
+                AuthUI.getInstance()
+                    .createSignInIntentBuilder()
+                    .setAvailableProviders(providers)
+                    .build(),
+                0)
+        }, 200)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == 0) {
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("finishedWelcome", false)) {
                 startActivity(Intent(this, MainScreen::class.java))
             } else {
                 startActivity(Intent(this, WelcomeActivity::class.java))
             }
-
             finish()
-        }, 200)
+        }
     }
 }
