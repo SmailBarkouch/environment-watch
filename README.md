@@ -17,3 +17,5 @@ Environement Watch was written with Kotlin using Android Studio. It utilizes 4 m
 - Google maps API is used to give users an interactive way to view the location of the spotting. 
 - Tensorflow is utilized to verify submissions. It will run through the pretrained network locally and comfirm whether the image is actually of a particular specieis.
 - Android location, camera, notification, and gallery services used.
+
+### [Demo Video](https://www.youtube.com/watch?v=VwEnq_lCQm0)
