@@ -1,7 +1,7 @@
 # environment-watch
 A way to crowd-source populations of endanger animals in a mobile platform.
 
-This was written in 3 days for a hackathon.
+This was written in 3 days for a hackathon (Make SPP 2020).
 **To use this app you will have to switch the firebase key and google maps access keys with your own. The one on this repo expired.**
 
 #### [Demo Video](https://www.youtube.com/watch?v=VwEnq_lCQm0)
