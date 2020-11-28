@@ -1,6 +1,8 @@
 # environment-watch
 A way to crowd-source populations of endanger animals in a mobile platform.
 
+This was written in 3 days for a hackathon.
+
 #### [Demo Video](https://www.youtube.com/watch?v=VwEnq_lCQm0)
 
 ### Features
